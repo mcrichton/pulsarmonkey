@@ -892,6 +892,7 @@ window.addEventListener("load", () => {
         addAllCss();
     })();
 
+    /*
     (function injectSideMenu () {
         const $sideMenu = $(`
         <div class="sidemenu__toggle">
@@ -929,6 +930,7 @@ window.addEventListener("load", () => {
 
         renderDivider($mnu);
     })();
+    */
 
     (new TenerifeOverlay()).doCreate();
 });
