@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.0
+// @version      0.1.1
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -49,6 +49,10 @@ const CSS = [
     {
         s: ".col-1",
         r: "width: 8.333%;"
+    },
+    {
+        s: ".col-1-8",
+        r: "width: 15%;"
     },
     {
         s: ".col-1-9",
@@ -650,6 +654,9 @@ function TenerifeOverlay () {
             .appendTo($wrpCb)
             .change(() => $row.toggleClass("tf__list_item--selected", $cbSel.prop("checked")));
 
+        const $wrpCamId = $(`<div class="col col-0-5 text-align-center">${c.camera_id}</div>`)
+            .appendTo($row);
+
         const captureIdNum = Number(c.capture_id) * 1000;
         const $wrpCaptureId = $(`<div class="col col-0-8 captureId can-copy text-align-center" ${isNaN(captureIdNum) ? "" : `title="${new Date(captureIdNum)}"`}>${c.capture_id}</div>`)
             .appendTo($row)
@@ -668,20 +675,20 @@ function TenerifeOverlay () {
                 $loading.replaceWith(this.__get$Row(connection));
             });
 
-        const $wrpUploadBe = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpUploadBe = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadBe, colorUploadBe] = TenerifeOverlay._getColorAndMessageUploadBe(c);
         const $dspUploadBe = $(`<div class="tf__item_pad" style="background-color: ${colorUploadBe}"/>`)
             .appendTo($wrpUploadBe);
         const $txtUploadBe = $(`<span>${messageUploadBe}</span>`).appendTo($wrpUploadBe);
 
-        const $wrpUploadCp = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpUploadCp = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload process");
         const $btnUploadCp = this.__get$Pad(`Trigger Cloud Processing UPLOAD`, colorUploadCp, "tf__upload_cp")
             .appendTo($wrpUploadCp)
             .click(() => this._getConfirmation(`Are you sure you want to trigger Cloud Processing's "UPLOAD" process?`) && pTriggerConnectionOperation(c.id, "reupload"));
         const $txtUploadCp = $(`<span>${messageUploadCp}</span>`).appendTo($wrpUploadCp);
 
-        const $wrpPreview = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpPreview = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePreview, colorPreview] = TenerifeOverlay._getColorAndMessageGeneric(c, "Preview");
         const $btnPreview = this.__get$Pad(`Trigger PREVIEW`, colorPreview, "tf__preview", c.preview_executed ? HTML_TICK : "")
             .appendTo($wrpPreview)
@@ -693,7 +700,7 @@ function TenerifeOverlay () {
             });
         const $txtPreview = $(`<span>${messagePreview}</span>`).appendTo($wrpPreview);
 
-        const $wrpProcess = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpProcess = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageProcessing, colorProcessing] = TenerifeOverlay._getColorAndMessageGeneric(c, "Processing");
         const $btnProcess = this.__get$Pad(`Trigger PROCESSING`, colorProcessing, "tf__process", c.processing_executed ? HTML_TICK : "")
             .appendTo($wrpProcess)
@@ -705,7 +712,7 @@ function TenerifeOverlay () {
             });
         const $txtProcess = $(`<span>${messageProcessing}</span>`).appendTo($wrpProcess);
 
-        const $wrpPublish = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpPublish = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePublish, colorPublish] = TenerifeOverlay._getColorAndMessageGeneric(c, "Publishing");
         const $btnPublish = this.__get$Pad(`Trigger PUBLISH`, colorPublish, "tf__publish", c.publish_executed ? HTML_TICK : "")
             .appendTo($wrpPublish)
@@ -795,19 +802,25 @@ function TenerifeOverlay () {
             .click(() => {
                 const v = Number($selMassSel.val());
                 if (!v) return alert("Please choose a filter first");
-                this._list.items.forEach(li => $(li.elm).find(`.tf__item_sel`).prop("checked", false));
+                this._$wrpList.find(`.tf__item_sel`).prop("checked", false);
                 const toSel = (() => {
+                    const getSelection = (clazz, isNull, isFailed) => {
+                        return this._$wrpList.find(`.tf__list_item`).filter((i, e) => {
+                            const txt = $(e).find(`.${clazz}`).text();
+                            return (isNull && txt === "null") || (isFailed && _FAILED_STATUS.has(txt));
+                        });
+                    };
                     switch (v) {
-                        case 1: return this._list.items.filter(it => _FAILED_STATUS.has(it._values.uploadCpStatus) || it._values.uploadCpStatus === "null");
-                        case 2: return this._list.items.filter(it => it._values.previewStatus === "null");
-                        case 3: return this._list.items.filter(it => _FAILED_STATUS.has(it._values.previewStatus));
-                        case 4: return this._list.items.filter(it => it._values.processStatus === "null");
-                        case 6: return this._list.items.filter(it => _FAILED_STATUS.has(it._values.processStatus));
-                        case 7: return this._list.items.filter(it => it._values.publishStatus === "null");
-                        case 8: return this._list.items.filter(it => _FAILED_STATUS.has(it._values.publishStatus));
+                        case 1: return getSelection("uploadCpStatus", true, true);
+                        case 2: return getSelection("previewStatus", true, false);
+                        case 3: return getSelection("previewStatus", false, true);
+                        case 4: return getSelection("processStatus", true, false);
+                        case 6: return getSelection("processStatus", false, true);
+                        case 7: return getSelection("publishStatus", true, false);
+                        case 8: return getSelection("publishStatus", false, true);
                     }
                 })();
-                toSel.forEach(li => $(li.elm).find(`.tf__item_sel`).prop("checked", true));
+                toSel.find(`.tf__item_sel`).prop("checked", true);
             });
         const _MASS_SEL_OPTIONS = [
             "UPLOAD (CP) status: none/error",
@@ -826,16 +839,16 @@ function TenerifeOverlay () {
             .click(() => {
                 const v = Number($selMassTrigger.val());
                 if (!v) return alert("Please choose an operation first");
-                const allSel = this._list.items.filter(it => $(it.elm).find(`.tf__item_sel`).prop("checked"));
-                if (!allSel.length) return alert("Please select some captures first");
+                const $allSel = this._$wrpList.find(`.tf__list_item`).filter((i, e) => $(e).find(`.tf__item_sel`).prop("checked"));
+                if (!$allSel.length) return alert("Please select some captures first");
                 const vText = _MASS_TRIGGER_OPTIONS[v - 1];
-                if (confirm(`Are you sure you want to mass-trigger the ${vText} operation for ${allSel.length} capture${allSel.length.length === 1 ? "" : "s"}?`)) {
+                if (confirm(`Are you sure you want to mass-trigger the ${vText} operation for ${$allSel.length} capture${$allSel.length.length === 1 ? "" : "s"}?`)) {
                     this._disableConfirmation();
                     switch (v) {
-                        case 1: return allSel.forEach(it => $(it.elm).find(`.tf__upload_cp`).click());
-                        case 2: return allSel.forEach(it => $(it.elm).find(`.tf__preview`).click());
-                        case 3: return allSel.forEach(it => $(it.elm).find(`.tf__process`).click());
-                        case 4: return allSel.forEach(it => $(it.elm).find(`.tf__publish`).click());
+                        case 1: return $allSel.each((i, e) => $(e).find(`.tf__upload_cp`).click());
+                        case 2: return $allSel.each((i, e) => $(e).find(`.tf__preview`).click());
+                        case 3: return $allSel.each((i, e) => $(e).find(`.tf__process`).click());
+                        case 4: return $allSel.each((i, e) => $(e).find(`.tf__publish`).click());
                     }
                     this._enableConfirmation();
                 }
@@ -853,7 +866,7 @@ function TenerifeOverlay () {
 
         const $cbAll = $(`<input type="checkbox">`)
             .change(() => {
-                this._list.items.map(it => $(it.elm).find(`.tf__item_sel`)).forEach($e => $e.prop("checked", $cbAll.prop("checked")))
+                this._$wrpList.find(`.tf__item_sel`).prop("checked", $cbAll.prop("checked"));
             });
 
         this._$wrpList = $(`<div class="tf__list_wrp" id="tf_wrp_list">
@@ -876,13 +889,14 @@ function TenerifeOverlay () {
             </div>
             <div class="tf__list_head">
                 <label class="col col-0-5 text-align-center"><div data-usurp="10"/></label>
+                <div class="col col-0-5 text-align-center" title="Database ID">Cam</div>
                 <div class="col col-0-8 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
-                <div class="col col-1-9 text-align-center">UPLOAD (BE)</div>
-                <div class="col col-1-9 text-align-center">UPLOAD (CP)</div>
-                <div class="col col-1-9 text-align-center">PREVIEW</div>
-                <div class="col col-1-9 text-align-center">PROCESS</div>
-                <div class="col col-1-9 text-align-center">PUBLISH</div>
+                <div class="col col-1-8 text-align-center">UPLOAD (BE)</div>
+                <div class="col col-1-8 text-align-center">UPLOAD (CP)</div>
+                <div class="col col-1-8 text-align-center">PREVIEW</div>
+                <div class="col col-1-8 text-align-center">PROCESS</div>
+                <div class="col col-1-8 text-align-center">PUBLISH</div>
             </div>
             <div class="list tf__list"/>
         </div>`).usurp($iptIds, $iptDateMin, $iptDateMax, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $cbAll).appendTo(this._$wrp);
