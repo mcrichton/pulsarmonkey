@@ -102,6 +102,18 @@ const CSS = [
         s: ".ml-2",
         r: "margin-left: 0.5rem !important;"
     },
+    {
+        s: ".ml-3",
+        r: "margin-left: 1rem !important;"
+    },
+    {
+        s: ".ml-4",
+        r: "margin-left: 1.5rem !important;"
+    },
+    {
+        s: ".ml-5",
+        r: "margin-left: 3rem !important;"
+    },
     // Blueprint overrides
     {
         s: ".bp3-button--small",
@@ -125,6 +137,10 @@ const CSS = [
     {
         s: ".can-copy",
         r: "cursor: copy;"
+    },
+    {
+        s: ".help-subtle",
+        r: "cursor: help;"
     },
     {
         s: ".no-shrink",
@@ -171,7 +187,7 @@ const CSS = [
         `
     },
     {
-        s: ".tf__wrp",
+        s: ".tf__wrp, .tf_modal__wrp",
         r: `
             overflow-x: none;
             background: #293742;
@@ -186,15 +202,15 @@ const CSS = [
     },
     // - custom scrollbars
     {
-        s: ".tf__wrp *::-webkit-scrollbar",
+        s: ".tf__wrp *::-webkit-scrollbar, .tf_modal__wrp *::-webkit-scrollbar",
         r: "width: 9px; height: 9px;"
     },
     {
-        s: ".tf__wrp *::-webkit-scrollbar-track",
+        s: ".tf__wrp *::-webkit-scrollbar-track, .tf_modal__wrp *::-webkit-scrollbar-track",
         r: "background: transparent;"
     },
     {
-        s: ".tf__wrp *::-webkit-scrollbar-thumb",
+        s: ".tf__wrp *::-webkit-scrollbar-thumb, .tf_modal__wrp *::-webkit-scrollbar-thumb",
         r: "background: #999;"
     },
     {
@@ -323,6 +339,31 @@ const CSS = [
         r: `
             text-align: center;
             line-height: 22px;
+        `
+    },
+    {
+        s: ".tf_modal__wrp_outer",
+        r: `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10001;
+            background: #00000080;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        `
+    },
+    {
+        s: ".tf_modal__code",
+        r: `
+            white-space: pre;
+            overflow: auto;
+            max-width: 100%;
+            max-height: 100%;
+            font-family: "Courier New", Courier, monospace;
         `
     },
     // Side menu
@@ -480,6 +521,7 @@ const CSS = [
 
 const HTML_TICK = "&#x2714;";
 const HTML_TRASH = "&#x1f5d1;";
+const HTML_BEVERAGE = "&#x2615;";
 
 class MiscUtil {
     static showCopiedEffect ($ele, text = "Copied!") {
@@ -584,7 +626,7 @@ function TenerifeOverlay () {
         this._$wrpOuter = $wrpOuter;
         this._$wrp = $(`<div class="tf__wrp bp3-dark"/>`).appendTo($wrpOuter).click(evt => evt.stopPropagation());
 
-        await this._loadPopulateList(43, 45);
+        await this._loadPopulateList("2018-11-15", "", 43, 45);
     };
 
     this.__get$LoadingRow = () => $(`<div class="tf__list_item"><div class="col col-12 text-align-center"><i>Loading...</i></div></div>`);
@@ -599,7 +641,8 @@ function TenerifeOverlay () {
             .appendTo($wrpCb)
             .change(() => $row.toggleClass("tf__list_item--selected", $cbSel.prop("checked")));
 
-        const $wrpCaptureId = $(`<div class="col col-1 captureId can-copy text-align-center">${c.capture_id}</div>`)
+        const captureIdNum = Number(c.capture_id) * 1000;
+        const $wrpCaptureId = $(`<div class="col col-1 captureId can-copy text-align-center" ${isNaN(captureIdNum) ? "" : `title="${new Date(captureIdNum)}"`}>${c.capture_id}</div>`)
             .appendTo($row)
             .click(() => {
                 MiscUtil.copyText(c.capture_id);
@@ -607,7 +650,7 @@ function TenerifeOverlay () {
             });
 
         const $wrpRefresh = $(`<div class="col col-0-5 text-align-center"/>`).appendTo($row);
-        const $btnRefresh = $(`<button class="bp3-button bp3-button--small mr-2 tf__refresh">&#8635;</button>`)
+        const $btnRefresh = $(`<button class="bp3-button bp3-button--small mr-2 tf__refresh" title="Refresh row">&#8635;</button>`)
             .appendTo($wrpRefresh)
             .click(async () => {
                 const $loading = this.__get$LoadingRow();
@@ -618,20 +661,20 @@ function TenerifeOverlay () {
 
         const $wrpUploadBe = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadBe, colorUploadBe] = TenerifeOverlay._getColorAndMessageUploadBe(c);
-        const $dspUploadBe = $(`<div class="tf__item_pad" style="background-color: ${colorUploadBe}" title="${messageUploadBe}"/>`)
+        const $dspUploadBe = $(`<div class="tf__item_pad" style="background-color: ${colorUploadBe}"/>`)
             .appendTo($wrpUploadBe);
         const $txtUploadBe = $(`<span>${messageUploadBe}</span>`).appendTo($wrpUploadBe);
 
         const $wrpUploadCp = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload process");
-        const $btnUploadCp = this.__get$Pad(messageUploadCp, colorUploadCp, "tf__upload_cp")
+        const $btnUploadCp = this.__get$Pad(`Trigger Cloud Processing UPLOAD`, colorUploadCp, "tf__upload_cp")
             .appendTo($wrpUploadCp)
             .click(() => this._getConfirmation(`Are you sure you want to trigger Cloud Processing's "UPLOAD" process?`) && pTriggerConnectionOperation(c.id, "reupload"));
         const $txtUploadCp = $(`<span>${messageUploadCp}</span>`).appendTo($wrpUploadCp);
 
         const $wrpPreview = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePreview, colorPreview] = TenerifeOverlay._getColorAndMessageGeneric(c, "Preview");
-        const $btnPreview = this.__get$Pad(messagePreview, colorPreview, "tf__preview", c.preview_executed ? HTML_TICK : "")
+        const $btnPreview = this.__get$Pad(`Trigger PREVIEW`, colorPreview, "tf__preview", c.preview_executed ? HTML_TICK : "")
             .appendTo($wrpPreview)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to trigger the "PREVIEW" process?`)) {
@@ -643,7 +686,7 @@ function TenerifeOverlay () {
 
         const $wrpProcess = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageProcessing, colorProcessing] = TenerifeOverlay._getColorAndMessageGeneric(c, "Processing");
-        const $btnProcess = this.__get$Pad(messageProcessing, colorProcessing, "tf__process", c.processing_executed ? HTML_TICK : "")
+        const $btnProcess = this.__get$Pad(`Trigger PROCESSING`, colorProcessing, "tf__process", c.processing_executed ? HTML_TICK : "")
             .appendTo($wrpProcess)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to trigger the "PROCESSING" (extract + stitch) process?`)) {
@@ -655,7 +698,7 @@ function TenerifeOverlay () {
 
         const $wrpPublish = $(`<div class="col col-1-9 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePublish, colorPublish] = TenerifeOverlay._getColorAndMessageGeneric(c, "Publishing");
-        const $btnPublish = this.__get$Pad(messagePublish, colorPublish, "tf__publish", c.publish_executed ? HTML_TICK : "")
+        const $btnPublish = this.__get$Pad(`Trigger PUBLISH`, colorPublish, "tf__publish", c.publish_executed ? HTML_TICK : "")
             .appendTo($wrpPublish)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to trigger the "PUBLISH" process?`)) {
@@ -665,9 +708,21 @@ function TenerifeOverlay () {
             });
         const $txtPublish = $(`<span>${messagePublish}</span>`).appendTo($wrpPublish);
 
-        const $wrpDelete = $(`<div class="col col-0-5"/>`).appendTo($row);
-        const $btnDelete = this.__get$Pad(c.is_deleted ? `Record is marked as deleted` : `Record is not marked as deleted`, c.is_deleted ? rgbErrorRed : rbgNoStatusGrey, "", HTML_TRASH)
-            .appendTo($wrpDelete)
+        const $wrpDebugDelete = $(`<div class="col col-0-5"/>`).appendTo($row);
+        const $btnDbg = this.__get$Pad("View debug info", rbgNoStatusGrey, "", HTML_BEVERAGE)
+            .appendTo($wrpDebugDelete)
+            .addClass("mr-1")
+            .click(() => {
+                const $wrpOuter = $(`<div class="tf_modal__wrp_outer"/>`)
+                    .appendTo($(`body`))
+                    .click(() => $wrpOuter.remove());
+                const $wrpModal = $(`<div class="tf_modal__wrp"/>`)
+                    .appendTo($wrpOuter)
+                    .click(evt => evt.stopPropagation());
+                const $code = $(`<div class="tf_modal__code">${JSON.stringify(c, null, 2)}</div>`).appendTo($wrpModal);
+            });
+        const $btnDelete = this.__get$Pad(`Mark record as deleted`, c.is_deleted ? rgbErrorRed : rbgNoStatusGrey, "", HTML_TRASH)
+            .appendTo($wrpDebugDelete)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to set "is_deleted" status for this connection? This will not delete any data. This cannot be undone without direct database access.`)) {
                     await pSetConnectionDeleted(c.id, !c.is_deleted);
@@ -685,32 +740,36 @@ function TenerifeOverlay () {
         return $row;
     };
 
-    this._loadPopulateList = async (...camIds) => {
+    this._loadPopulateList = async (minDate, maxDate, ...camIds) => {
         if (this._$wrpList) this._$wrpList.remove();
         this._list = null;
+
+        const minDateStr = minDate;
+        const maxDateStr = maxDate;
+        minDate = minDate ? Date.parse(minDate) / 1000 : 0;
+        maxDate = maxDate ? Date.parse(maxDate) / 1000 : Number.MAX_SAFE_INTEGER;
 
         const $iptIds = $(`<input class="bp3-input" placeholder="Camera database IDs (comma separated)" value="${camIds.join(",")}">`)
             .keydown((e) => {
                 if (e.which === 13) $btnReloadList.click();
             });
-        const $btnReloadList = $(`<button class="bp3-button no-shrink ml-2">Populate List</button>`)
+        const $iptDateMin = $(`<input type="date" value="${minDateStr}">`);
+        const $iptDateMax = $(`<input type="date" value="${maxDateStr}">`);
+        const $btnReloadList = $(`<button class="bp3-button no-shrink ml-2">Repopulate List</button>`)
             .click(() => {
                 const ids = $iptIds.val();
                 const nums = ids.split(",").map(it => it.trim()).filter(Boolean).map(it => Number(it));
                 if (nums.some(n => isNaN(n))) return alert("Invalid input!");
-                this._loadPopulateList(nums.join(","));
+                this._loadPopulateList($iptDateMin.val(), $iptDateMax.val(), nums.join(","));
             });
         const [$wrpCbReqConf, $cbRequireConf] = TenerifeOverlay._get$Checkbox("Operations Require Confirmation");
         this._$cbRequireConf = $cbRequireConf.prop("checked", true);
-        $wrpCbReqConf.addClass("ml-2")
-            .css({
-                width: "15rem"
-            });
+        $wrpCbReqConf.addClass("ml-5").css({width: "15rem"});
 
-        const $btnRefreshCaptures = $(`<button class="bp3-button no-shrink ml-2">Refresh All</button>`)
+        const $btnRefreshCaptures = $(`<button class="bp3-button no-shrink ml-4">Refresh All</button>`)
             .click(() => this._$wrpList.find(`.tf__refresh`).click());
         const _FAILED_STATUS = new Set(["FAILED", "LAUNCHED"]);
-        const $btnMassSel = $(`<button class="bp3-button no-shrink ml-2">Select all...</button>`)
+        const $btnMassSel = $(`<button class="bp3-button no-shrink ml-4">Select all...</button>`)
             .click(() => {
                 const v = Number($selMassSel.val());
                 if (!v) return alert("Please choose a filter first");
@@ -741,7 +800,7 @@ function TenerifeOverlay () {
             <option disabled value="0">Choose a filter</option>
             ${_MASS_SEL_OPTIONS.map((it, i) => `<option value="${i + 1}">${it}</option>`).join("")}
         </select>`).val("0");
-        const $btnMassTrigger = $(`<button class="bp3-button no-shrink ml-2">Mass-trigger...</button>`)
+        const $btnMassTrigger = $(`<button class="bp3-button no-shrink ml-3">Mass-trigger...</button>`)
             .click(() => {
                 const v = Number($selMassTrigger.val());
                 if (!v) return alert("Please choose an operation first");
@@ -778,19 +837,23 @@ function TenerifeOverlay () {
         this._$wrpList = $(`<div class="tf__list_wrp" id="tf_wrp_list">
             <div class="tf__top_2">
                 <div data-usurp="0"/>
+                <div class="flex-center ml-2 mr-2">Capture date from</div>
                 <div data-usurp="1"/>
+                <div class="flex-center  ml-2 mr-2">to</div>
                 <div data-usurp="2"/>
+                <div data-usurp="3"/>
+                <div data-usurp="4"/>
             </div>
             <div class="tf__top_2">
                 <input class="bp3-input search tf__search" placeholder="Search Capture ID...">
-                <div data-usurp="3"/>
-                <div data-usurp="4"/>
                 <div data-usurp="5"/>
                 <div data-usurp="6"/>
                 <div data-usurp="7"/>
+                <div data-usurp="8"/>
+                <div data-usurp="9"/>
             </div>
             <div class="tf__list_head">
-                <label class="col col-0-5 text-align-center"><div data-usurp="8"/></label>
+                <label class="col col-0-5 text-align-center"><div data-usurp="10"/></label>
                 <div class="col col-1 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
                 <div class="col col-1-9 text-align-center">UPLOAD (BE)</div>
@@ -800,7 +863,7 @@ function TenerifeOverlay () {
                 <div class="col col-1-9 text-align-center">PUBLISH</div>
             </div>
             <div class="list tf__list"/>
-        </div>`).usurp($iptIds, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $cbAll).appendTo(this._$wrp);
+        </div>`).usurp($iptIds, $iptDateMin, $iptDateMax, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $cbAll).appendTo(this._$wrp);
         const $list = this._$wrpList.find(`.tf__list`);
 
         $list.append(this.__get$LoadingRow());
@@ -808,7 +871,11 @@ function TenerifeOverlay () {
         const connections = await pApiGet(`connection?camera=${camIds.join(",")}&deleted=true`);
         $list.empty();
 
-        connections.forEach(c => this.__get$Row(c).appendTo($list));
+        connections.filter(it => {
+            const numCapId = Number(it.capture_id);
+            if (isNaN(numCapId)) return true;
+            return numCapId >= minDate && numCapId <= maxDate;
+        }).forEach(c => this.__get$Row(c).appendTo($list));
 
         setTimeout(() => {
             this._list = new List("tf_wrp_list", {
