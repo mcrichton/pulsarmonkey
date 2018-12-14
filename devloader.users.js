@@ -11,5 +11,5 @@
 // @run-at       document-end
 // @require      https://code.jquery.com/jquery-3.2.1.min.js
 // @require      https://raw.githubusercontent.com/javve/list.js/v1.5.0/dist/list.min.js
-// @require      file:///home/murray/repos/other/pulsarmonkey/pulsar.userscript.js
+// @require      file:///home/murray/repos/other/pulsarmonkey/pulsar.user.js
 // ==/UserScript==
