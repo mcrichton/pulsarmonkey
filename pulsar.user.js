@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.1
+// @version      0.1.2
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -953,11 +953,11 @@ TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName) {
     if (!capture.last_upload_status) return ["(No status)", rbgNoStatusGrey];
     switch (capture.last_upload_status) {
         case "SUCCEEDED": return [`${processName} succeeded`, rgbSuccessGreen];
-        case "LAUNCHFAIL": return [`${processName} failed to launch. Error was: ${capture.last_upload_message || "(none)"}`, rgbErrorRed];
-        case "FAILED": return [`${processName} failed. Error was: ${capture.last_upload_message || "(none)"}`, rgbErrorRed];
+        case "LAUNCHFAIL": return [`${processName} failed to launch}`, rgbErrorRed];
+        case "FAILED": return [`${processName} failed`, rgbErrorRed];
         case "LAUNCHED":
         case "RUNNING": return [`${processName} in progress`, rgbInfoBlue];
-        default: return [`${processName} has unknown status: "${capture.status}"`, rgbWarnYellow];
+        default: return [`${processName} unknown status "${capture.status}"`, rgbWarnYellow];
     }
 };
 
