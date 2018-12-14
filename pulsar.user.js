@@ -39,6 +39,14 @@ const CSS = [
         r: "width: 4.1667%;"
     },
     {
+        s: ".col-0-7",
+        r: "width: 5.8333%;"
+    },
+    {
+        s: ".col-0-8",
+        r: "width: 6.6666%;"
+    },
+    {
         s: ".col-1",
         r: "width: 8.333%;"
     },
@@ -522,6 +530,7 @@ const CSS = [
 const HTML_TICK = "&#x2714;";
 const HTML_TRASH = "&#x1f5d1;";
 const HTML_BEVERAGE = "&#x2615;";
+const HTML_FILM = "&#x1F39E;";
 
 class MiscUtil {
     static showCopiedEffect ($ele, text = "Copied!") {
@@ -552,13 +561,13 @@ class MiscUtil {
     }
 }
 
-const API_ROOT = `https://${location.host}/api/pulsar/`;
+const API_ROOT = `https://${location.host}/api/`;
 
 function log (...args) {
     console.log("PULSAR_MONKEY", ...args)
 }
 
-function pApiGet (path, isJson = true) {
+function pApiGet (path, isJson = true, api = "pulsar") {
     return new Promise((resolve, reject) => {
         const r = new XMLHttpRequest();
         r.onload = function () {
@@ -566,7 +575,7 @@ function pApiGet (path, isJson = true) {
             catch (e) { reject(e); }
         };
         r.onerror = (e) => reject(e);
-        r.open("GET", `${API_ROOT}${path}${path.includes("?") ? "&" : "?"}t=${Date.now()}`);
+        r.open("GET", `${API_ROOT}${api}/${path}${path.includes("?") ? "&" : "?"}t=${Date.now()}`);
         if (isJson) r.setRequestHeader("Content-Type", "application/json");
         r.send();
     });
@@ -642,7 +651,7 @@ function TenerifeOverlay () {
             .change(() => $row.toggleClass("tf__list_item--selected", $cbSel.prop("checked")));
 
         const captureIdNum = Number(c.capture_id) * 1000;
-        const $wrpCaptureId = $(`<div class="col col-1 captureId can-copy text-align-center" ${isNaN(captureIdNum) ? "" : `title="${new Date(captureIdNum)}"`}>${c.capture_id}</div>`)
+        const $wrpCaptureId = $(`<div class="col col-0-8 captureId can-copy text-align-center" ${isNaN(captureIdNum) ? "" : `title="${new Date(captureIdNum)}"`}>${c.capture_id}</div>`)
             .appendTo($row)
             .click(() => {
                 MiscUtil.copyText(c.capture_id);
@@ -708,21 +717,34 @@ function TenerifeOverlay () {
             });
         const $txtPublish = $(`<span>${messagePublish}</span>`).appendTo($wrpPublish);
 
-        const $wrpDebugDelete = $(`<div class="col col-0-5"/>`).appendTo($row);
+        const $wrpQuickControls = $(`<div class="col col-0-7"/>`).appendTo($row);
+        const $btnVideo = this.__get$Pad("View video", rbgNoStatusGrey, "", HTML_FILM)
+            .appendTo($wrpQuickControls)
+            .addClass("mr-1")
+            .click(async () => {
+                const $wrpModal = TenerifeOverlay._get$Modal();
+                const doShow = (message) => $(`<div class="flex-center"><div data-usurp="0"/></div>`).css({width: "100%", height: "100%"}).usurp(message).appendTo($wrpModal);
+
+                doShow(`<i>Loading...</i>`);
+                const preview = await pApiGet(`camera/${c.camera_id}/connection/${c.id}/preview`, true, "google");
+                $wrpModal.empty();
+                if (preview.location) {
+                    doShow(`<video width="320" height="240" controls src="${preview.location}" style="width: 100%; height: 100%;">`);
+                } else {
+                    doShow("No preview found. Click to close.");
+                    $wrpModal.click(() => $wrpModal.parent().click())
+                }
+
+            });
         const $btnDbg = this.__get$Pad("View debug info", rbgNoStatusGrey, "", HTML_BEVERAGE)
-            .appendTo($wrpDebugDelete)
+            .appendTo($wrpQuickControls)
             .addClass("mr-1")
             .click(() => {
-                const $wrpOuter = $(`<div class="tf_modal__wrp_outer"/>`)
-                    .appendTo($(`body`))
-                    .click(() => $wrpOuter.remove());
-                const $wrpModal = $(`<div class="tf_modal__wrp"/>`)
-                    .appendTo($wrpOuter)
-                    .click(evt => evt.stopPropagation());
-                const $code = $(`<div class="tf_modal__code">${JSON.stringify(c, null, 2)}</div>`).appendTo($wrpModal);
+                const $wrpModal = TenerifeOverlay._get$Modal();
+                $(`<div class="tf_modal__code">${JSON.stringify(c, null, 2)}</div>`).appendTo($wrpModal);
             });
         const $btnDelete = this.__get$Pad(`Mark record as deleted`, c.is_deleted ? rgbErrorRed : rbgNoStatusGrey, "", HTML_TRASH)
-            .appendTo($wrpDebugDelete)
+            .appendTo($wrpQuickControls)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to set "is_deleted" status for this connection? This will not delete any data. This cannot be undone without direct database access.`)) {
                     await pSetConnectionDeleted(c.id, !c.is_deleted);
@@ -854,7 +876,7 @@ function TenerifeOverlay () {
             </div>
             <div class="tf__list_head">
                 <label class="col col-0-5 text-align-center"><div data-usurp="10"/></label>
-                <div class="col col-1 text-align-center">Capture ID</div>
+                <div class="col col-0-8 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
                 <div class="col col-1-9 text-align-center">UPLOAD (BE)</div>
                 <div class="col col-1-9 text-align-center">UPLOAD (CP)</div>
@@ -894,6 +916,15 @@ TenerifeOverlay._get$Checkbox = function (labelText) {
     `).usurp($cb).css({marginBottom: 0});
     const $wrpOuterCb = $(`<div class="flex-center"/>`).append($wrpCb);
     return [$wrpOuterCb, $cb];
+};
+TenerifeOverlay._get$Modal = function () {
+    const $wrpOuter = $(`<div class="tf_modal__wrp_outer"/>`)
+        .appendTo($(`body`))
+        .click(() => $wrpOuter.remove());
+    const $wrpModal = $(`<div class="tf_modal__wrp"/>`)
+        .appendTo($wrpOuter)
+        .click(evt => evt.stopPropagation());
+    return $wrpModal;
 };
 TenerifeOverlay._getColorAndMessageUploadBe = function (capture) {
     if (!capture.status) return ["(No status)", rbgNoStatusGrey];
