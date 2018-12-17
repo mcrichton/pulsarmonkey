@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.2
+// @version      0.1.3
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -682,7 +682,7 @@ function TenerifeOverlay () {
         const $txtUploadBe = $(`<span>${messageUploadBe}</span>`).appendTo($wrpUploadBe);
 
         const $wrpUploadCp = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
-        const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload process");
+        const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload");
         const $btnUploadCp = this.__get$Pad(`Trigger Cloud Processing UPLOAD`, colorUploadCp, "tf__upload_cp")
             .appendTo($wrpUploadCp)
             .click(() => this._getConfirmation(`Are you sure you want to trigger Cloud Processing's "UPLOAD" process?`) && pTriggerConnectionOperation(c.id, "reupload"));
@@ -953,7 +953,7 @@ TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName) {
     if (!capture.last_upload_status) return ["(No status)", rbgNoStatusGrey];
     switch (capture.last_upload_status) {
         case "SUCCEEDED": return [`${processName} succeeded`, rgbSuccessGreen];
-        case "LAUNCHFAIL": return [`${processName} failed to launch}`, rgbErrorRed];
+        case "LAUNCHFAIL": return [`${processName} failed to launch`, rgbErrorRed];
         case "FAILED": return [`${processName} failed`, rgbErrorRed];
         case "LAUNCHED":
         case "RUNNING": return [`${processName} in progress`, rgbInfoBlue];
