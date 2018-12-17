@@ -682,14 +682,14 @@ function TenerifeOverlay () {
         const $txtUploadBe = $(`<span>${messageUploadBe}</span>`).appendTo($wrpUploadBe);
 
         const $wrpUploadCp = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
-        const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload");
+        const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload", "last_upload_status");
         const $btnUploadCp = this.__get$Pad(`Trigger Cloud Processing UPLOAD`, colorUploadCp, "tf__upload_cp")
             .appendTo($wrpUploadCp)
             .click(() => this._getConfirmation(`Are you sure you want to trigger Cloud Processing's "UPLOAD" process?`) && pTriggerConnectionOperation(c.id, "reupload"));
         const $txtUploadCp = $(`<span>${messageUploadCp}</span>`).appendTo($wrpUploadCp);
 
         const $wrpPreview = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
-        const [messagePreview, colorPreview] = TenerifeOverlay._getColorAndMessageGeneric(c, "Preview");
+        const [messagePreview, colorPreview] = TenerifeOverlay._getColorAndMessageGeneric(c, "Preview", "last_preview_status");
         const $btnPreview = this.__get$Pad(`Trigger PREVIEW`, colorPreview, "tf__preview", c.preview_executed ? HTML_TICK : "")
             .appendTo($wrpPreview)
             .click(async () => {
@@ -701,7 +701,7 @@ function TenerifeOverlay () {
         const $txtPreview = $(`<span>${messagePreview}</span>`).appendTo($wrpPreview);
 
         const $wrpProcess = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
-        const [messageProcessing, colorProcessing] = TenerifeOverlay._getColorAndMessageGeneric(c, "Processing");
+        const [messageProcessing, colorProcessing] = TenerifeOverlay._getColorAndMessageGeneric(c, "Processing", "last_processing_status");
         const $btnProcess = this.__get$Pad(`Trigger PROCESSING`, colorProcessing, "tf__process", c.processing_executed ? HTML_TICK : "")
             .appendTo($wrpProcess)
             .click(async () => {
@@ -713,7 +713,7 @@ function TenerifeOverlay () {
         const $txtProcess = $(`<span>${messageProcessing}</span>`).appendTo($wrpProcess);
 
         const $wrpPublish = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
-        const [messagePublish, colorPublish] = TenerifeOverlay._getColorAndMessageGeneric(c, "Publishing");
+        const [messagePublish, colorPublish] = TenerifeOverlay._getColorAndMessageGeneric(c, "Publishing", "last_publish_status");
         const $btnPublish = this.__get$Pad(`Trigger PUBLISH`, colorPublish, "tf__publish", c.publish_executed ? HTML_TICK : "")
             .appendTo($wrpPublish)
             .click(async () => {
@@ -949,9 +949,9 @@ TenerifeOverlay._getColorAndMessageUploadBe = function (capture) {
         default: return [`Unknown status: "${capture.status}"`, rgbWarnYellow];
     }
 };
-TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName) {
-    if (!capture.last_upload_status) return ["(No status)", rbgNoStatusGrey];
-    switch (capture.last_upload_status) {
+TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName, prop) {
+    if (!capture[prop]) return ["(No status)", rbgNoStatusGrey];
+    switch (capture[prop]) {
         case "SUCCEEDED": return [`${processName} succeeded`, rgbSuccessGreen];
         case "LAUNCHFAIL": return [`${processName} failed to launch`, rgbErrorRed];
         case "FAILED": return [`${processName} failed`, rgbErrorRed];
