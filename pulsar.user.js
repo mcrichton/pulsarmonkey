@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.8
+// @version      0.1.9
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        https://pulsar-dev.onestopvr.com/*
@@ -977,9 +977,10 @@ TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName, pro
         case "SUCCEEDED": return [`${processName} succeeded`, rgbSuccessGreen];
         case "LAUNCHFAIL": return [`${processName} failed to launch`, rgbErrorRed];
         case "FAILED": return [`${processName} failed`, rgbErrorRed];
+        case "START":
         case "LAUNCHED":
         case "RUNNING": return [`${processName} in progress`, rgbInfoBlue];
-        default: return [`${processName} unknown status "${capture.status}"`, rgbWarnYellow];
+        default: return [`${processName} unknown status "${capture[prop]}"`, rgbWarnYellow];
     }
 };
 
