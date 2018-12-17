@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.3
+// @version      0.1.4
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -943,7 +943,7 @@ TenerifeOverlay._get$Modal = function () {
 TenerifeOverlay._getColorAndMessageUploadBe = function (capture) {
     if (!capture.status) return ["(No status)", rbgNoStatusGrey];
     switch (capture.status) {
-        case "UPLOADED": return ["Uploaded successfully to backend", rgbSuccessGreen];
+        case "UPLOADED": return ["Upload to backend succeeded", rgbSuccessGreen];
         case "FAILED": return ["Upload to backend failed", rgbErrorRed];
         case "UPLOADING": return ["Backend upload in progress", rgbInfoBlue];
         default: return [`Unknown status: "${capture.status}"`, rgbWarnYellow];
