@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.4
+// @version      0.1.5
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -797,7 +797,7 @@ function TenerifeOverlay () {
 
         const $btnRefreshCaptures = $(`<button class="bp3-button no-shrink ml-4">Refresh All</button>`)
             .click(() => this._$wrpList.find(`.tf__refresh`).click());
-        const _FAILED_STATUS = new Set(["FAILED", "LAUNCHED"]);
+        const _FAILED_STATUS = new Set(["FAILED", "LAUNCHFAIL"]);
         const $btnMassSel = $(`<button class="bp3-button no-shrink ml-4">Select all...</button>`)
             .click(() => {
                 const v = Number($selMassSel.val());
