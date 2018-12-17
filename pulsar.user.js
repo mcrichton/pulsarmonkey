@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.6
+// @version      0.1.7
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
@@ -764,6 +764,7 @@ function TenerifeOverlay () {
             <div class="previewStatus">${c.last_preview_status}</div>
             <div class="processStatus">${c.last_processing_status}</div>
             <div class="publishStatus">${c.last_publish_status}</div>
+            <div class="connectionId">${c.id}</div>
         </div>`).appendTo($row);
 
         return $row;
@@ -863,6 +864,26 @@ function TenerifeOverlay () {
             <option disabled value="0">Choose an operation</option>
             ${_MASS_TRIGGER_OPTIONS.map((it, i) => `<option value="${i + 1}">${it}</option>`).join("")}
         </select>`).val("0");
+        const $btnGetExport = $(`<button class="bp3-button no-shrink ml-4" title="Human-readable info about the currently-selected rows that you can copy-paste">Get Slack-able Summary</button>`)
+            .click(async () => {
+                const $allSel = this._$wrpList.find(`.tf__list_item`).filter((i, e) => $(e).find(`.tf__item_sel`).prop("checked"));
+                if (!$allSel.length) return alert("Please select some captures first");
+
+                MiscUtil.showCopiedEffect($btnGetExport, "Loading...");
+
+                const connIds = $allSel.map((i, e) => Number($(e).find(`.connectionId`).text())).get();
+                const connections = await Promise.all(connIds.map(id => pApiGet(`connection/${id}`)));
+
+                const cameraIds = [...new Set(connections.map(it => it.camera_id))];
+                const cameras = await Promise.all(cameraIds.map(id => pApiGet(`camera/${id}`)));
+                const camerasIx = {};
+                cameras.forEach(cam => camerasIx[cam.id] = cam);
+
+                const toCopy = connections.sort((a, b) => a.camera_id - b.camera_id || Number(a.capture_id) - Number(b.capture_id)).map(c => `${camerasIx[c.camera_id].serial_number} (ID ${c.camera_id}) -- ${c.capture_id} (ID ${c.id})`).join("\n");
+
+                prompt("Ctrl-C this, and paste into Slack", toCopy);
+                MiscUtil.showCopiedEffect($btnGetExport);
+            });
 
         const $cbAll = $(`<input type="checkbox">`)
             .change(() => {
@@ -886,9 +907,10 @@ function TenerifeOverlay () {
                 <div data-usurp="7"/>
                 <div data-usurp="8"/>
                 <div data-usurp="9"/>
+                <div data-usurp="10"/>
             </div>
             <div class="tf__list_head">
-                <label class="col col-0-5 text-align-center"><div data-usurp="10"/></label>
+                <label class="col col-0-5 text-align-center"><div data-usurp="11"/></label>
                 <div class="col col-0-5 text-align-center" title="Database ID">Cam</div>
                 <div class="col col-0-8 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
@@ -899,7 +921,7 @@ function TenerifeOverlay () {
                 <div class="col col-1-8 text-align-center">PUBLISH</div>
             </div>
             <div class="list tf__list"/>
-        </div>`).usurp($iptIds, $iptDateMin, $iptDateMax, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $cbAll).appendTo(this._$wrp);
+        </div>`).usurp($iptIds, $iptDateMin, $iptDateMax, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $btnGetExport, $cbAll).appendTo(this._$wrp);
         const $list = this._$wrpList.find(`.tf__list`);
 
         $list.append(this.__get$LoadingRow());
@@ -915,7 +937,7 @@ function TenerifeOverlay () {
 
         setTimeout(() => {
             this._list = new List("tf_wrp_list", {
-                valueNames: ["captureId", "uploadCpStatus", "previewStatus", "processStatus", "publishStatus"]
+                valueNames: ["captureId", "uploadCpStatus", "previewStatus", "processStatus", "publishStatus", "connectionId"]
             });
         }, 5); // delay to allow list population
     }
