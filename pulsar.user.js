@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.9
+// @version      0.1.10
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        https://pulsar-dev.onestopvr.com/*
@@ -803,7 +803,7 @@ function TenerifeOverlay () {
             .click(() => {
                 const v = Number($selMassSel.val());
                 if (!v) return alert("Please choose a filter first");
-                this._$wrpList.find(`.tf__item_sel`).prop("checked", false);
+                this._$wrpList.find(`.tf__item_sel`).prop("checked", false).change();
                 const toSel = (() => {
                     const getSelection = (clazz, isNull, isFailed) => {
                         return this._$wrpList.find(`.tf__list_item`).filter((i, e) => {
@@ -821,7 +821,7 @@ function TenerifeOverlay () {
                         case 8: return getSelection("publishStatus", false, true);
                     }
                 })();
-                toSel.find(`.tf__item_sel`).prop("checked", true);
+                toSel.find(`.tf__item_sel`).prop("checked", true).change();
             });
         const _MASS_SEL_OPTIONS = [
             "UPLOAD (CP) status: none/error",
@@ -887,7 +887,7 @@ function TenerifeOverlay () {
 
         const $cbAll = $(`<input type="checkbox">`)
             .change(() => {
-                this._$wrpList.find(`.tf__item_sel`).prop("checked", $cbAll.prop("checked"));
+                this._$wrpList.find(`.tf__item_sel`).prop("checked", $cbAll.prop("checked")).change();
             });
 
         this._$wrpList = $(`<div class="tf__list_wrp" id="tf_wrp_list">
