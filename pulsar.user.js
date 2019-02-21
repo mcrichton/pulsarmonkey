@@ -12,8 +12,6 @@
 // @require      https://raw.githubusercontent.com/javve/list.js/v1.5.0/dist/list.min.js
 // ==/UserScript==
 
-const rgbBorderGrey = "#ccc";
-const rbgBackground = "#293742";
 const rgbInfoBlue = "#137cbd";
 const rgbSuccessGreen = "#0f9960";
 const rgbErrorRed = "#db3737";
@@ -377,157 +375,6 @@ const CSS = [
             max-height: 100%;
             font-family: "Courier New", Courier, monospace;
         `
-    },
-    // Side menu
-    {
-        s: ".sidemenu",
-        r: `
-            background: ${rbgBackground};
-            border-right: 1px solid ${rgbBorderGrey};
-        
-            position: fixed;
-            z-index: 60;
-            top: 0;
-            bottom: 0;
-            left: -260px;
-            width: 250px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-            transition: left 0.1s;
-            cursor: default;
-            display: flex;
-            flex-direction: column;
-            padding: 3px;
-        `
-    },
-    {
-        s: ".sidemenu__toggle",
-        r: `
-            background: #546775;
-            position: absolute;
-            z-index: 60;
-            top: 46px;
-            left: -7px;
-            width: 32px;
-            height: 32px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-            cursor: pointer;
-            transition: left 0.1s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            padding: 3px 4px;
-        `
-    },
-    {
-        s: ".sidemenu__hotzone",
-        r: `
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 1px;
-        `
-    },
-    {
-        s: ".sidemenu__burger",
-        r: `
-            background: #f0f0f0;
-            height: 3px;
-            box-shadow: inset 0 0 1px 0 #888;
-        `
-    },
-    {
-        s: ".sidemenu__toggle:hover .sidemenu",
-        r: `
-            left: 0;
-	        transition: left 0.1s;
-        `
-    },
-    {
-        s: ".sidemenu__row ",
-        r: `
-            width: 100%;
-	        display: flex;
-	        justify-content: space-between;
-	        align-items: center;
-	        margin-bottom: 5px;
-        `
-    },
-    {
-        s: ".sidemenu__row--alt",
-        r: `
-        	width: 100%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 5px;
-        `
-    },
-    {
-        s: ".sidemenu__row--vert",
-        r: `
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-        `
-    },
-    {
-        s: ".sidemenu__row__divider",
-        r: `
-            background: ${rgbBorderGrey};
-            height: 1px;
-            width: calc(100% - 16px);
-            margin: 2px 8px 7px;
-        `
-    },
-    {
-        s: ".sidemenu__row__divider--heavy",
-        r: `
-            height: 1px;
-            background: #aaa;
-            width: calc(100% + 6px);
-            margin: 2px -3px 7px;
-        `
-    },
-    {
-        s: ".sidemenu__row__label",
-        r: `
-            min-width: 46px;
-	        flex-shrink: 0;
-        `
-    },
-    {
-        s: ".sidemenu__row__label--cb-label",
-        r: `
-        	font-weight: initial;
-	        display: flex;
-	        margin-bottom: 0;
-	        justify-content: space-between;
-	        width: 100%;
-        `
-    },
-    {
-        s: "input[type=checkbox].sidemenu__row__label__cb",
-        r: `
-            margin-right: 3px;
-	        margin-left: 7px
-        `
-    },
-    {
-        s: ".sidemenu__ipt",
-        r: `
-            width: 100%;
-	        margin-right: 7px;
-        `
-    },
-    {
-        s: ".sidemenu__row_title",
-        r: `
-            width: 100%;
-	        font-weight: bold;
-	        text-align: center;
-        `
     }
 ];
 
@@ -772,7 +619,6 @@ function TenerifeOverlay () {
 
     this._loadPopulateList = async (minDate, maxDate, ...camIds) => {
         if (this._$wrpList) this._$wrpList.remove();
-        this._list = null;
 
         const minDateStr = minDate;
         const maxDateStr = maxDate;
@@ -957,10 +803,9 @@ TenerifeOverlay._get$Modal = function () {
     const $wrpOuter = $(`<div class="tf_modal__wrp_outer"/>`)
         .appendTo($(`body`))
         .click(() => $wrpOuter.remove());
-    const $wrpModal = $(`<div class="tf_modal__wrp"/>`)
+    return $(`<div class="tf_modal__wrp"/>`)
         .appendTo($wrpOuter)
         .click(evt => evt.stopPropagation());
-    return $wrpModal;
 };
 TenerifeOverlay._getColorAndMessageUploadBe = function (capture) {
     if (!capture.status) return ["(No status)", rbgNoStatusGrey];
@@ -1026,46 +871,6 @@ window.addEventListener("load", () => {
 
         addAllCss();
     })();
-
-    /*
-    (function injectSideMenu () {
-        const $sideMenu = $(`
-        <div class="sidemenu__toggle">
-            <div class="sidemenu__hotzone"></div>
-            <div class="sidemenu__burger"></div>
-            <div class="sidemenu__burger"></div>
-            <div class="sidemenu__burger"></div>
-            <div class="sidemenu"></div>
-        </div>
-    `).appendTo($("body"));
-        const $mnu = $sideMenu.find(".sidemenu");
-
-        const renderDivider = ($menu, heavy) => $menu.append(`<hr class="sidemenu__row__divider ${heavy ? "sidemenu__row__divider--heavy" : ""}">`);
-
-        $(`<div class="sidemenu__row"><div class="sidemenu__row_title">Re-trigger Connection upload</div></div>`).appendTo($mnu);
-
-        const $wrpTriggerUpload = $(`<div class="sidemenu__row"/>`).appendTo($mnu);
-        const $iptTriggerUpload = $(`<input class="bp3-input one-shrink sidemenu__ipt" type="number" placeholder="Connection DB ID">`).appendTo($wrpTriggerUpload);
-        const $btnSourceAdd = $(`<button class="bp3-button no-shrink">Trigger</button>`)
-            .appendTo($wrpTriggerUpload)
-            .click(async () => {
-                const iptVal = $iptTriggerUpload.val();
-                if (!iptVal || !iptVal.trim() || isNaN(Number(iptVal))) {
-                    alert("Please enter a valid numerical ID.")
-                } else {
-                    try {
-                        await pTriggerConnectionOperation(Number(iptVal), "reupload");
-                        alert("Successfully triggered!")
-                    } catch (e) {
-                        console.error(e);
-                        alert(`Failed to trigger UPLOAD; see the log for more details. Error was: ${e.message}`);
-                    }
-                }
-            });
-
-        renderDivider($mnu);
-    })();
-    */
 
     (new TenerifeOverlay()).doCreate();
 });
