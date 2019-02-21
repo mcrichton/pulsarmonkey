@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.12
+// @version      0.1.13
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        https://pulsar-dev.onestopvr.com/*
@@ -460,6 +460,34 @@ function pSetConnectionDeleted (id, isDeleted) {
     });
 }
 
+/**
+ * Template strings which can contain jQuery objects.
+ * Usage: $$`<div>Press this button: ${$btn}</div>`
+ */
+function $$ (parts, ...args) {
+    const $eles = [];
+    let ixArg = 0;
+
+    const handleArg = (arg) => {
+        if (arg instanceof $) {
+            $eles.push(arg);
+            return `<slot data-r=true></slot>`;
+        } else if (arg instanceof HTMLElement) {
+            return handleArg($(arg));
+        } else return arg
+    };
+
+    const raw = parts.reduce((html, p) => {
+        const myIxArg = ixArg++;
+        if (args[myIxArg] == null) return `${html}${p}`;
+        if (args[myIxArg] instanceof Array) return `${html}${args[myIxArg].map(arg => handleArg(arg)).join("")}${p}`;
+        else return `${html}${handleArg(args[myIxArg])}${p}`;
+    });
+    const $res = $(raw);
+    $res.find(`slot[data-r=true]`).replaceWith(i => $eles[i]);
+    return $res;
+}
+
 function TenerifeOverlay () {
     this._$wrpList = null;
     this._list = null;
@@ -577,7 +605,7 @@ function TenerifeOverlay () {
             .addClass("mr-1")
             .click(async () => {
                 const $wrpModal = TenerifeOverlay._get$Modal();
-                const doShow = (message) => $(`<div class="flex-center"><div data-usurp="0"/></div>`).css({width: "100%", height: "100%"}).usurp(message).appendTo($wrpModal);
+                const doShow = (message) => $$`<div class="flex-center">${message}</div>`.css({width: "100%", height: "100%"}).appendTo($wrpModal);
 
                 doShow(`<i>Loading...</i>`);
                 const preview = await pApiGet(`camera/${c.camera_id}/connection/${c.id}/preview`, true, "google");
@@ -736,27 +764,27 @@ function TenerifeOverlay () {
                 this._$wrpList.find(`.tf__item_sel`).prop("checked", $cbAll.prop("checked")).change();
             });
 
-        this._$wrpList = $(`<div class="tf__list_wrp" id="tf_wrp_list">
+        this._$wrpList = $$`<div class="tf__list_wrp" id="tf_wrp_list">
             <div class="tf__top_2">
-                <div data-usurp="0"/>
+                ${$iptIds}
                 <div class="flex-center ml-2 mr-2">Capture date from</div>
-                <div data-usurp="1"/>
+                ${$iptDateMin}
                 <div class="flex-center  ml-2 mr-2">to</div>
-                <div data-usurp="2"/>
-                <div data-usurp="3"/>
-                <div data-usurp="4"/>
+                ${$iptDateMax}
+                ${$btnReloadList}
+                ${$wrpCbReqConf}
             </div>
             <div class="tf__top_2">
                 <input class="bp3-input search tf__search" placeholder="Search Capture ID...">
-                <div data-usurp="5"/>
-                <div data-usurp="6"/>
-                <div data-usurp="7"/>
-                <div data-usurp="8"/>
-                <div data-usurp="9"/>
-                <div data-usurp="10"/>
+                ${$btnRefreshCaptures}
+                ${$btnMassSel}
+                ${$selMassSel}
+                ${$btnMassTrigger}
+                ${$selMassTrigger}
+                ${$btnGetExport}
             </div>
             <div class="tf__list_head">
-                <label class="col col-0-5 text-align-center"><div data-usurp="11"/></label>
+                <label class="col col-0-5 text-align-center">${$cbAll}</label>
                 <div class="col col-0-5 text-align-center" title="Database ID">Cam</div>
                 <div class="col col-0-8 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
@@ -767,7 +795,7 @@ function TenerifeOverlay () {
                 <div class="col col-1-8 text-align-center">PUBLISH</div>
             </div>
             <div class="list tf__list"/>
-        </div>`).usurp($iptIds, $iptDateMin, $iptDateMax, $btnReloadList, $wrpCbReqConf, $btnRefreshCaptures, $btnMassSel, $selMassSel, $btnMassTrigger, $selMassTrigger, $btnGetExport, $cbAll).appendTo(this._$wrp);
+        </div>`.appendTo(this._$wrp);
         const $list = this._$wrpList.find(`.tf__list`);
 
         $list.append(this.__get$LoadingRow());
@@ -791,11 +819,11 @@ function TenerifeOverlay () {
 TenerifeOverlay._active = null;
 TenerifeOverlay._get$Checkbox = function (labelText) {
     const $cb = $(`<input type="checkbox">`);
-    const $wrpCb = $(`
+    const $wrpCb = $$`
         <label class="bp3-control bp3-control--no-margin bp3-checkbox bp3-align-left">
-        <div data-usurp="0"/>
+        ${$cb}
         <span class="bp3-control-indicator"/>${labelText}</label>
-    `).usurp($cb).css({marginBottom: 0});
+    `.css({marginBottom: 0});
     const $wrpOuterCb = $(`<div class="flex-center"/>`).append($wrpCb);
     return [$wrpOuterCb, $cb];
 };
@@ -830,19 +858,6 @@ TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName, pro
 };
 
 window.addEventListener("load", () => {
-    $.fn.extend({
-        /**
-         * Takes a jQuery object and replaces elements with `data-usurp-<n>` with the nth position arg, e.g.
-         * $(`<div><div>my <span>initial</span> html <div data-usurp="0"/> <div data-usurp="1"/></div>`)
-         */
-        usurp: function (...$toSwap) {
-            $toSwap.forEach((ts, i) => {
-                this.find(`[data-usurp="${i}"]`).replaceWith(ts);
-            });
-            return this;
-        }
-    });
-
     (function injectCss () {
         function addCss (sheet, selector, rules){
             const index = sheet.cssRules.length;
