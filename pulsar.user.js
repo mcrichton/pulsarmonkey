@@ -1018,7 +1018,7 @@ window.addEventListener("load", () => {
         function addAllCss () {
             log("Injecting CSS...");
             const targetSheet =  [...window.document.styleSheets]
-                .filter(it => it.href && (!it.href.startsWith("moz-extension") && !it.href.startsWith("chrome-extension")))
+                // .filter(it => it.href && (!it.href.startsWith("moz-extension") && !it.href.startsWith("chrome-extension")))
                 .reverse()[0];
 
             CSS.forEach(r => addCss(targetSheet, r.s, r.r));
