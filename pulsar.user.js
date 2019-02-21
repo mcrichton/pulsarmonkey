@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.11
+// @version      0.1.12
 // @author       Murray C
 // @match        https://pulsar.vr.world/*
 // @match        https://pulsar-dev.onestopvr.com/*
