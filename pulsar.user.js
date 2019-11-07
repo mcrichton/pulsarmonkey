@@ -263,18 +263,20 @@ const CSS = [
     {
         s: ".tf__list_head",
         r: `
+            display: flex;
             width: 100%;
             flex-shrink: 0;
             margin-bottom: 2px;
             font-weight: bold;
             border-bottom: 1px solid #666;
+            padding-right: 9px;
         `
     },
     {
         s: ".tf__list",
         r: `
             width: 100%;
-            overflow-y: auto;
+            overflow-y: scroll;
             transform: translateZ(0);
         `
     },
@@ -521,7 +523,7 @@ function TenerifeOverlay () {
         this._$wrpOuter = $wrpOuter;
         this._$wrp = $(`<div class="tf__wrp bp3-dark"/>`).appendTo($wrpOuter).click(evt => evt.stopPropagation());
 
-        await this._loadPopulateList("2018-11-15", "", 43, 45);
+        await this._loadPopulateList("2018-11-15", "", TenerifeOverlay._storedState.camIds);
     };
 
     this.__get$LoadingRow = () => $(`<div class="tf__list_item"><div class="col col-12 text-align-center"><i>Loading...</i></div></div>`);
@@ -557,20 +559,20 @@ function TenerifeOverlay () {
                 $loading.replaceWith(this.__get$Row(connection));
             });
 
-        const $wrpUploadBe = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpUploadBe = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadBe, colorUploadBe] = TenerifeOverlay._getColorAndMessageUploadBe(c);
         const $dspUploadBe = $(`<div class="tf__item_pad" style="background-color: ${colorUploadBe}"/>`)
             .appendTo($wrpUploadBe);
         const $txtUploadBe = $(`<span>${messageUploadBe}</span>`).appendTo($wrpUploadBe);
 
-        const $wrpUploadCp = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpUploadCp = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageUploadCp, colorUploadCp] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cloud upload", "last_upload_status");
         const $btnUploadCp = this.__get$Pad(`Trigger Cloud Processing UPLOAD`, colorUploadCp, "tf__upload_cp")
             .appendTo($wrpUploadCp)
             .click(() => this._getConfirmation(`Are you sure you want to trigger Cloud Processing's "UPLOAD" process?`) && pTriggerConnectionOperation(c.id, "reupload"));
         const $txtUploadCp = $(`<span>${messageUploadCp}</span>`).appendTo($wrpUploadCp);
 
-        const $wrpPreview = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpPreview = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePreview, colorPreview] = TenerifeOverlay._getColorAndMessageGeneric(c, "Preview", "last_preview_status");
         const $btnPreview = this.__get$Pad(`Trigger PREVIEW`, colorPreview, "tf__preview", c.preview_executed ? HTML_TICK : "")
             .appendTo($wrpPreview)
@@ -582,7 +584,7 @@ function TenerifeOverlay () {
             });
         const $txtPreview = $(`<span>${messagePreview}</span>`).appendTo($wrpPreview);
 
-        const $wrpProcess = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpProcess = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
         const [messageProcessing, colorProcessing] = TenerifeOverlay._getColorAndMessageGeneric(c, "Processing", "last_processing_status");
         const $btnProcess = this.__get$Pad(`Trigger PROCESSING`, colorProcessing, "tf__process", c.processing_executed ? HTML_TICK : "")
             .appendTo($wrpProcess)
@@ -594,7 +596,7 @@ function TenerifeOverlay () {
             });
         const $txtProcess = $(`<span>${messageProcessing}</span>`).appendTo($wrpProcess);
 
-        const $wrpPublish = $(`<div class="col col-1-8 tf__wrp_item_pad"/>`).appendTo($row);
+        const $wrpPublish = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
         const [messagePublish, colorPublish] = TenerifeOverlay._getColorAndMessageGeneric(c, "Publishing", "last_publish_status");
         const $btnPublish = this.__get$Pad(`Trigger PUBLISH`, colorPublish, "tf__publish", c.publish_executed ? HTML_TICK : "")
             .appendTo($wrpPublish)
@@ -605,6 +607,54 @@ function TenerifeOverlay () {
                 }
             });
         const $txtPublish = $(`<span>${messagePublish}</span>`).appendTo($wrpPublish);
+
+        const $wrpCubeface = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
+        const [messageCubeface, colorCubeface] = TenerifeOverlay._getColorAndMessageGeneric(c, "Cubefaceing", "last_cubeface_status");
+        const $btnCubeface = this.__get$Pad(`Trigger CUBEFACE`, colorCubeface, "tf__cubeface", c.cubeface_executed ? HTML_TICK : "")
+            .appendTo($wrpCubeface)
+            .click(async () => {
+                if (this._getConfirmation(`Are you sure you want to trigger the "CUBEFACE" process?`)) {
+                    await pTriggerConnectionOperation(c.id, "cubeface");
+                    $btnRefresh.click();
+                }
+            });
+        const $txtCubeface = $(`<span>${messageCubeface}</span>`).appendTo($wrpCubeface);
+
+        const $wrpBackup = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
+        const [messageBackup, colorBackup] = TenerifeOverlay._getColorAndMessageGeneric(c, "Backuping", "last_backup_status");
+        const $btnBackup = this.__get$Pad(`Trigger BACKUP`, colorBackup, "tf__backup", c.backup_executed ? HTML_TICK : "")
+            .appendTo($wrpBackup)
+            .click(async () => {
+                if (this._getConfirmation(`Are you sure you want to trigger the "BACKUP" process?`)) {
+                    await pTriggerConnectionOperation(c.id, "backup");
+                    $btnRefresh.click();
+                }
+            });
+        const $txtBackup = $(`<span>${messageBackup}</span>`).appendTo($wrpBackup);
+
+        const $wrpRestore = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
+        const [messageRestore, colorRestore] = TenerifeOverlay._getColorAndMessageGeneric(c, "Restoreing", "last_restore_status");
+        const $btnRestore = this.__get$Pad(`Trigger RESTORE`, colorRestore, "tf__restore", c.restore_executed ? HTML_TICK : "")
+            .appendTo($wrpRestore)
+            .click(async () => {
+                if (this._getConfirmation(`Are you sure you want to trigger the "RESTORE" process?`)) {
+                    await pTriggerConnectionOperation(c.id, "restore");
+                    $btnRefresh.click();
+                }
+            });
+        const $txtRestore = $(`<span>${messageRestore}</span>`).appendTo($wrpRestore);
+
+        const $wrpDelete = $(`<div class="col col-1 tf__wrp_item_pad"/>`).appendTo($row);
+        const [messageDelete, colorDelete] = TenerifeOverlay._getColorAndMessageGeneric(c, "Deleteing", "last_delete_status");
+        const $btnDelete = this.__get$Pad(`Trigger DELETE`, colorDelete, "tf__delete", c.delete_executed ? HTML_TICK : "")
+            .appendTo($wrpDelete)
+            .click(async () => {
+                if (this._getConfirmation(`Are you sure you want to trigger the "DELETE" process?`)) {
+                    await pTriggerConnectionOperation(c.id, "delete");
+                    $btnRefresh.click();
+                }
+            });
+        const $txtDelete = $(`<span>${messageDelete}</span>`).appendTo($wrpDelete);
 
         const $wrpQuickControls = $(`<div class="col col-0-7"/>`).appendTo($row);
         const $btnVideo = this.__get$Pad("View video", rbgNoStatusGrey, "", HTML_FILM)
@@ -632,7 +682,7 @@ function TenerifeOverlay () {
                 const $wrpModal = TenerifeOverlay._get$Modal();
                 $(`<div class="tf_modal__code">${JSON.stringify(c, null, 2)}</div>`).appendTo($wrpModal);
             });
-        const $btnDelete = this.__get$Pad(`Mark record as deleted`, c.is_deleted ? rgbErrorRed : rbgNoStatusGrey, "", HTML_TRASH)
+        const $btnUserDelete = this.__get$Pad(`Mark record as deleted`, c.is_deleted ? rgbErrorRed : rbgNoStatusGrey, "", HTML_TRASH)
             .appendTo($wrpQuickControls)
             .click(async () => {
                 if (this._getConfirmation(`Are you sure you want to set "is_deleted" status for this connection? This will not delete any data. This cannot be undone without direct database access.`)) {
@@ -660,10 +710,12 @@ function TenerifeOverlay () {
         minDate = minDate ? Date.parse(minDate) / 1000 : 0;
         maxDate = maxDate ? Date.parse(maxDate) / 1000 : Number.MAX_SAFE_INTEGER;
 
-        const $iptIds = $(`<input class="bp3-input tf__ipt-cameras" placeholder="Camera database IDs (comma separated)" value="${camIds.join(",")}">`)
+        const $iptIds = $(`<input class="bp3-input tf__ipt-cameras" placeholder="Camera database IDs (comma separated)">`)
             .keydown((e) => {
                 if (e.which === 13) $btnReloadList.click();
-            });
+                TenerifeOverlay._storedState.camIds = $iptIds.val().split(",").map(it => Number(it.trim())).filter(it => !isNaN(it));
+            })
+            .val(camIds.join(","));
         const $iptDateMin = $(`<input type="date" value="${minDateStr}">`);
         const $iptDateMax = $(`<input type="date" value="${maxDateStr}">`);
         const $btnReloadList = $(`<button class="bp3-button no-shrink ml-2">Repopulate List</button>`)
@@ -795,11 +847,15 @@ function TenerifeOverlay () {
                 <div class="col col-0-5 text-align-center" title="Database ID">Cam</div>
                 <div class="col col-0-8 text-align-center">Capture ID</div>
                 <div class="col col-0-5 text-align-center"><!-- Refresh button --></div>
-                <div class="col col-1-8 text-align-center">UPLOAD (BE)</div>
-                <div class="col col-1-8 text-align-center">UPLOAD (CP)</div>
-                <div class="col col-1-8 text-align-center">PREVIEW</div>
-                <div class="col col-1-8 text-align-center">PROCESS</div>
-                <div class="col col-1-8 text-align-center">PUBLISH</div>
+                <div class="col col-1 text-align-center">UPLOAD (BE)</div>
+                <div class="col col-1 text-align-center">UPLOAD (CP)</div>
+                <div class="col col-1 text-align-center">PREVIEW</div>
+                <div class="col col-1 text-align-center">PROCESS</div>
+                <div class="col col-1 text-align-center">PUBLISH</div>
+                <div class="col col-1 text-align-center">CUBEFACE</div>
+                <div class="col col-1 text-align-center">BACKUP</div>
+                <div class="col col-1 text-align-center">RESTORE</div>
+                <div class="col col-1 text-align-center">CUBEFACE</div>
             </div>
             <div class="list tf__list"/>
         </div>`.appendTo(this._$wrp);
@@ -810,7 +866,7 @@ function TenerifeOverlay () {
         const connections = await pApiGet(`connection?camera=${camIds.join(",")}&deleted=true`);
         $list.empty();
 
-        connections.filter(it => {
+        connections.reverse().filter(it => {
             const numCapId = Number(it.capture_id);
             if (isNaN(numCapId)) return true;
             return numCapId >= minDate && numCapId <= maxDate;
@@ -843,25 +899,28 @@ TenerifeOverlay._get$Modal = function () {
         .click(evt => evt.stopPropagation());
 };
 TenerifeOverlay._getColorAndMessageUploadBe = function (capture) {
-    if (!capture.status) return ["(No status)", rbgNoStatusGrey];
+    if (!capture.status) return ["(N/A)", rbgNoStatusGrey];
     switch (capture.status) {
-        case "UPLOADED": return ["Upload to backend succeeded", rgbSuccessGreen];
-        case "FAILED": return ["Upload to backend failed", rgbErrorRed];
-        case "UPLOADING": return ["Backend upload in progress", rgbInfoBlue];
-        default: return [`Unknown status: "${capture.status}"`, rgbWarnYellow];
+        case "UPLOADED": return ["Success", rgbSuccessGreen];
+        case "FAILED": return ["Fail", rgbErrorRed];
+        case "UPLOADING": return ["Running", rgbInfoBlue];
+        default: return [`Unknown`, rgbWarnYellow];
     }
 };
 TenerifeOverlay._getColorAndMessageGeneric = function (capture, processName, prop) {
-    if (!capture[prop]) return ["(No status)", rbgNoStatusGrey];
+    if (!capture[prop]) return ["(N/A)", rbgNoStatusGrey];
     switch (capture[prop]) {
-        case "SUCCEEDED": return [`${processName} succeeded`, rgbSuccessGreen];
-        case "LAUNCHFAIL": return [`${processName} failed to launch`, rgbErrorRed];
-        case "FAILED": return [`${processName} failed`, rgbErrorRed];
+        case "SUCCEEDED": return [`Success`, rgbSuccessGreen];
+        case "LAUNCHFAIL": return [`Launchfail`, rgbErrorRed];
+        case "FAILED": return [`Fail`, rgbErrorRed];
         case "START":
         case "LAUNCHED":
-        case "RUNNING": return [`${processName} in progress`, rgbInfoBlue];
-        default: return [`${processName} unknown status "${capture[prop]}"`, rgbWarnYellow];
+        case "RUNNING": return [`Running`, rgbInfoBlue];
+        default: return [`Unknown`, rgbWarnYellow];
     }
+};
+TenerifeOverlay._storedState = {
+    camIds: [43, 45]
 };
 
 window.addEventListener("load", () => {
