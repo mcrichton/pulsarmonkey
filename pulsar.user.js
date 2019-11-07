@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PulsarMonkey
-// @version      0.1.13
+// @version      0.1.14
 // @author       Murray C
-// @match        https://pulsar.vr.world/*
+// @match        https://pulsar-admin.vr.world/*
 // @match        https://pulsar-dev.onestopvr.com/*
 // @match        https://pulsar-staging.onestopvr.com/*
 // @grant        unsafeWindow
@@ -242,9 +242,16 @@ const CSS = [
     {
         s: ".tf__list_wrp",
         r: `
+            height: 100%;
             width: 100%;
             display: flex;
             flex-direction: column;
+        `
+    },
+    {
+        s: ".tf__ipt-cameras",
+        r: `
+            width: 300px;
         `
     },
     {
@@ -653,7 +660,7 @@ function TenerifeOverlay () {
         minDate = minDate ? Date.parse(minDate) / 1000 : 0;
         maxDate = maxDate ? Date.parse(maxDate) / 1000 : Number.MAX_SAFE_INTEGER;
 
-        const $iptIds = $(`<input class="bp3-input" placeholder="Camera database IDs (comma separated)" value="${camIds.join(",")}">`)
+        const $iptIds = $(`<input class="bp3-input tf__ipt-cameras" placeholder="Camera database IDs (comma separated)" value="${camIds.join(",")}">`)
             .keydown((e) => {
                 if (e.which === 13) $btnReloadList.click();
             });
