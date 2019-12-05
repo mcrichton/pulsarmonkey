@@ -1,7 +1,5 @@
 // ==UserScript==
 // @name         PulsarMonkey-Devloader
-// @namespace    https://rem.uz/
-// @license      MIT (https://opensource.org/licenses/MIT)
 // @version      1.0.0
 // @match        https://pulsar.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
