@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PulsarMonkey-Devloader
 // @version      1.0.0
-// @match        https://pulsar.vr.world/*
+// @match        https://pulsar-admin.vr.world/*
 // @match        http://pulsar-dev.onestopvr.com/*
 // @match        http://pulsar-staging.onestopvr.com/*
 // @grant        GM_xmlhttpRequest
